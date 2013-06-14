@@ -392,6 +392,19 @@ static void mix_channels(void *udata, Uint8 *stream, int len)
 	}
 }
 
+static const int MIX_AVM2_AUDIO_BUFER_LENGTH = 16384;
+
+Uint8 *Mix_AVM2_audioBuffer = NULL;
+
+void Mix_AVM2_mix_channels() {
+	if (Mix_AVM2_audioBuffer == NULL) {
+		Mix_AVM2_audioBuffer = malloc(MIX_AVM2_AUDIO_BUFER_LENGTH);
+	}
+
+	memset(Mix_AVM2_audioBuffer, 0, MIX_AVM2_AUDIO_BUFER_LENGTH);
+	mix_channels(NULL, Mix_AVM2_audioBuffer, MIX_AVM2_AUDIO_BUFER_LENGTH);
+}
+
 #if 0
 static void PrintFormat(char *title, SDL_AudioSpec *fmt)
 {
@@ -429,9 +442,14 @@ int Mix_OpenAudio(int frequency, Uint16 format, int nchannels, int chunksize)
 	desired.userdata = NULL;
 
 	/* Accept nearly any audio format */
+#ifdef __AVM2__
+	mixer = desired;
+#else
 	if ( SDL_OpenAudio(&desired, &mixer) < 0 ) {
 		return(-1);
 	}
+#endif
+
 #if 0
 	PrintFormat("Audio device", &mixer);
 #endif
